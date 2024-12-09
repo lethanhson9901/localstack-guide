@@ -1,0 +1,28 @@
+services:
+  localstack:
+    container_name: aws-local
+    image: localstack/localstack:latest
+    ports:
+      - "4566:4566"
+      - "4510-4559:4510-4559"
+    environment:
+      - DEBUG=${DEBUG:-0}
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - HOSTNAME_EXTERNAL=localhost
+      - SERVICES=${SERVICES:-s3,dynamodb,lambda,sqs,sns}
+      - PERSISTENCE=${PERSISTENCE:-1}
+      - DATA_DIR=/tmp/localstack/data
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - aws-local
+
+networks:
+  aws-local:
+    driver: bridge
